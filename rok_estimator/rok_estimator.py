@@ -238,6 +238,10 @@ class Relation:
     acc_snd_err: int = 0                            # accumulated soundness error
     log_beta_ext_2_func     : function = lambda x : x   # function mapping old canonical ell_2-norm of extracted witness to new one 
     log_beta_ext_inf_func   : function = lambda x : x   # function mapping old coefficient ell_inf-norm of extracted witness to new one
+    slack_2_func : function = lambda x : x 
+    slack_inf_func : function = lambda x : x 
+    log_slack_2: float | None = None
+    log_slack_inf: float | None = None
     
     def __post_init__(self):
         self.n_commit = self.ring.n_sis
@@ -323,13 +327,13 @@ Parameters:
     
     def show_row(self):
         flag_log_beta_wit_2 = f'*' if self.log_beta_wit_2 + 1 > self.ring.log_beta_sis_2 else ' '                                   # NOTE: Underestimating security when log_beta_wit_2 is measured in Frobenius norm 
-        flag_log_beta_ext_2 = f'*' if self.log_beta_ext_2 != None and self.log_beta_ext_2 + 1> self.ring.log_beta_sis_2 else ' '    # NOTE: Underestimating security when log_beta_ext_2 is measured in Frobenius norm 
+        flag_log_beta_ext_2 = f'*' if self.log_beta_ext_2 != None and self.log_beta_ext_2 > self.ring.log_beta_sis_2 else ' '    # NOTE: Underestimating security when log_beta_ext_2 is measured in Frobenius norm 
         log_snd_err_str = get_log_snd_err_str(self.snd_err)
         log_acc_snd_err_str = get_log_snd_err_str(self.acc_snd_err)
         if self.trivial:
             print(f' {self.op_name:9s} |          |     |                           |                             |          |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
         else:
-            print(f' {self.op_name:9s} | {self.wdim:8d} | {self.rep:3d} |        ({ceil(self.log_beta_wit_2):3d}{flag_log_beta_wit_2}|{ceil(self.log_beta_ext_2):3d}{flag_log_beta_ext_2})        |         ({ceil(self.log_beta_wit_inf):3d} |{ceil(self.log_beta_ext_inf):3d} )         | {pretty_size(self.wit_size()):8s} |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
+            print(f' {self.op_name:9s} | {self.wdim:8d} | {self.rep:3d} |    ({ceil(self.log_beta_wit_2):3d}{flag_log_beta_wit_2}|{ceil(self.log_beta_ext_2):3d}/{ceil(self.log_slack_2):3d}{flag_log_beta_ext_2})        |     ({ceil(self.log_beta_wit_inf):3d} |{ceil(self.log_beta_ext_inf):3d}/{ceil(self.log_slack_inf):3d} )         | {pretty_size(self.wit_size()):8s} |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
               
     def show(self):
         self.show_header()
