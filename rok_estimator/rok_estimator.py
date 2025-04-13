@@ -322,7 +322,7 @@ Parameters:
             # print(f"{self.op_name}: ell-inf norm is overestimated during extraction!")
             
     def show_header(self):
-        print(f' operation |   wdim   | rep | log_2-norm  (real | extr) | log_inf-norm  (real | extr) | wit size | communication  (growth | total) | soundness error  (growth | total) ')    
+        print(f' operation  |    wdim    | rep | log_2-norm  (real | extr) | log_inf-norm  (real | extr) |  wit size  | communication  (growth | total) | soundness error  (growth | total) ')    
         print(f'======================================================================================================================================================================')    
     
     def show_row(self):
@@ -332,9 +332,9 @@ Parameters:
         log_snd_err_str = get_log_snd_err_str(self.snd_err)
         log_acc_snd_err_str = get_log_snd_err_str(self.acc_snd_err)
         if self.trivial:
-            print(f' {self.op_name:9s} |          |     |                           |                             |          |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
+            print(f' {self.op_name:10s} |            |     |                           |                             |            |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
         else:
-            print(f' {self.op_name:9s} | {self.wdim:8d} | {self.rep:3d} |    ({ceil(self.log_beta_wit_2):3d}{flag_log_beta_wit_2}|{ceil(self.log_beta_ext_2):3d}/{ceil(self.log_slack_2):3d}{flag_log_beta_ext_2})        |     ({ceil(self.log_beta_wit_inf):3d} |{ceil(self.log_beta_ext_inf):3d}/{ceil(self.log_slack_inf):3d} )         | {pretty_size(self.wit_size()):8s} |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
+            print(f' {self.op_name:10s} | {self.wdim:10d} | {self.rep:3d} |    ({ceil(self.log_beta_wit_2):3d}{flag_log_beta_wit_2}|{ceil(self.log_beta_ext_2):3d}/{ceil(self.log_slack_2):3d}{flag_log_beta_ext_2})        |     ({ceil(self.log_beta_wit_inf):3d} |{ceil(self.log_beta_ext_inf):3d}/{ceil(self.log_slack_inf):3d} )         | {pretty_size(self.wit_size()):10s} |      ({pretty_size(self.comm):8s} | {pretty_size(self.acc_comm):8s})      |         (2^{log_snd_err_str:4s} | 2^{log_acc_snd_err_str:4s})         ')
               
     def show(self):
         self.show_header()
