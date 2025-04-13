@@ -68,19 +68,19 @@ def get_log_snd_err_str(snd_err):
     return log_snd_err_str
 
 @dataclass
-class SubtractiveSet:
+class ChallengeSet:
     """
-    Data class for subtractive sets.
+    Data class for challenge sets.
     
     Examples:
     
-    sage: SubtractiveSet.gen_klno24_cyclotomic(27)
-    SubtractiveSet(cardinality=3, gamma_2=3, theta_2=27/4*sqrt(2), gamma_inf=18, theta_inf=18)
+    sage: ChallengeSet.gen_klno24_cyclotomic(27)
+    ChallengeSet(cardinality=3, gamma_2=3, theta_2=27/4*sqrt(2), gamma_inf=18, theta_inf=18)
     
-    sage: SubtractiveSet.gen_klno24_cyclotomic(60) 
-    SubtractiveSet(cardinality=12, gamma_2=1, theta_2=15/2*sqrt(2), gamma_inf=1024/pi^3, theta_inf=1024/pi^3)
+    sage: ChallengeSet.gen_klno24_cyclotomic(60) 
+    ChallengeSet(cardinality=12, gamma_2=1, theta_2=15/2*sqrt(2), gamma_inf=1024/pi^3, theta_inf=1024/pi^3)
     """
-    cardinality: int = 2    # cardinality of the subtractive set C
+    cardinality: int = 2    # cardinality of the challenge set C
     gamma_2: float = 1      # forward expansion factor of C in canonical ell_2-norm
     theta_2: float = 1      # inverse expansion factor of C in canonical ell_2-norm
     gamma_inf: float = 1    # forward expansion factor of C in coefficient ell_inf-norm
@@ -88,30 +88,30 @@ class SubtractiveSet:
     
     def gen_klno24_cyclotomic(f: int):
         """ 
-        Use the subtractive set constructions for cyclotomic fields reported in KLNO24. 
+        Use the challenge set constructions for cyclotomic fields reported in KLNO24. 
         """
         if mod(f,4) == 2:
             raise Exception("Conductor f cannot be congruent to 2 modulo 4.")
         # Hard-code values for empirically verified rings
         if f == 24:
-            return SubtractiveSet(cardinality = 3, gamma_2 = 1, theta_2 = f/(4*sqrt(2)), gamma_inf = 2, theta_inf = 7)
+            return ChallengeSet(cardinality = 3, gamma_2 = 1, theta_2 = f/(4*sqrt(2)), gamma_inf = 2, theta_inf = 7)
         if f == 60:
-            return SubtractiveSet(cardinality = 12, gamma_2 = 1, theta_2 = f/(4*sqrt(2)), gamma_inf = 4, theta_inf = 17)
+            return ChallengeSet(cardinality = 12, gamma_2 = 1, theta_2 = f/(4*sqrt(2)), gamma_inf = 4, theta_inf = 17)
         # General case
         if is_prime_power(f):
             if f <= 4:
                 raise Exception("Conductor f <= 4 is not supported.")
             phi = euler_phi(f)
             p = radical(f)
-            return SubtractiveSet(cardinality = p, gamma_2 = p, theta_2 = f/(2*sqrt(2)), gamma_inf = phi, theta_inf = phi)
+            return ChallengeSet(cardinality = p, gamma_2 = p, theta_2 = f/(2*sqrt(2)), gamma_inf = phi, theta_inf = phi)
         else:
             phi = euler_phi(f)
             fmax = max_prime_power_divisor(f) 
             c_rad = (4/pi)**len(f.prime_divisors())
-            return SubtractiveSet(cardinality = f/fmax, gamma_2 = 1, theta_2 = f/(4*sqrt(2)), gamma_inf = c_rad * phi, theta_inf = c_rad * phi)
+            return ChallengeSet(cardinality = f/fmax, gamma_2 = 1, theta_2 = f/(4*sqrt(2)), gamma_inf = c_rad * phi, theta_inf = c_rad * phi)
         
     def __repr__(self):
-        return f'''Subtractive set parameters:
+        return f'''Challenge set parameters:
     cardinality: {self.cardinality}
     forward ell_2 expansion factor gamma_2: 2^{ceil(log(self.gamma_2,2))}
     inverse ell_2 expansion factor theta_2: 2^{ceil(log(self.theta_2,2))}
@@ -134,7 +134,7 @@ class RingParam:
     log_beta_sis_inf: int = 32                  # log of ell_inf-norm bound beta_sis_inf for SIS problem TODO: Currently ignored
     log_q: int = 64                             # log of modulus q (assumed prime)
     residue_deg: int | None = None              # inertia degree of q, i.e. R_q splits into fields of cardinality q**residue_deg 
-    C: InitVar[SubtractiveSet | None] = None    # subtractive set parameters
+    C: InitVar[ChallengeSet | None] = None      # challenge set parameters
     ring_exp_inf: float = field(init=False)     # ring expansion factor in coefficient ell_inf-norm
     n_sis: int | None = None                    # module rank of SIS instance
     secpar_target: int = 128                    # target SIS security
@@ -151,7 +151,7 @@ class RingParam:
         self.phi = euler_phi(self.f)
         self.ring_exp_inf = euler_phi(self.f)
         if self.C == None:
-            self.C = SubtractiveSet.gen_klno24_cyclotomic(self.f)       # Use the subtractive set construction for cyclotomic fields reported in KLNO24
+            self.C = ChallengeSet.gen_klno24_cyclotomic(self.f)       # Use the challenge set construction for cyclotomic fields reported in KLNO24
         if self.residue_deg == None:
             self.residue_deg = ceil((self.kappa_target + self.kappa_hedge)/self.log_q)       # Aim for kappa_target bits of soundness for Schwartz-Zippel. Adding kappa_hedge bits to hedge against running the RoKs 2**kappa_hedge times
             self.kappa_result = self.log_q * self.residue_deg
@@ -238,8 +238,8 @@ class Relation:
     acc_snd_err: int = 0                            # accumulated soundness error
     log_beta_ext_2_func     : function = lambda x : x   # function mapping old canonical ell_2-norm of extracted witness to new one 
     log_beta_ext_inf_func   : function = lambda x : x   # function mapping old coefficient ell_inf-norm of extracted witness to new one
-    slack_2_func : function = lambda x : x 
-    slack_inf_func : function = lambda x : x 
+    log_slack_2_func : function = lambda x : x 
+    log_slack_inf_func : function = lambda x : x 
     log_slack_2: float | None = None
     log_slack_inf: float | None = None
     
@@ -327,7 +327,8 @@ Parameters:
     
     def show_row(self):
         flag_log_beta_wit_2 = f'*' if self.log_beta_wit_2 + 1 > self.ring.log_beta_sis_2 else ' '                                   # NOTE: Underestimating security when log_beta_wit_2 is measured in Frobenius norm 
-        flag_log_beta_ext_2 = f'*' if self.log_beta_ext_2 != None and self.log_beta_ext_2 > self.ring.log_beta_sis_2 else ' '    # NOTE: Underestimating security when log_beta_ext_2 is measured in Frobenius norm 
+        flag_log_beta_ext_2 = f'*' if self.log_beta_ext_2 != None and self.log_beta_ext_2 + self.log_slack_2 > self.ring.log_beta_sis_2 else ' '    # NOTE: Underestimating security when log_beta_ext_2 is measured in Frobenius norm 
+        
         log_snd_err_str = get_log_snd_err_str(self.snd_err)
         log_acc_snd_err_str = get_log_snd_err_str(self.acc_snd_err)
         if self.trivial:
@@ -392,6 +393,8 @@ Parameters:
             "acc_comm" : self.acc_comm + comm,
             "log_beta_ext_2_func" : lambda x : self.log_beta_wit_2, # perfect extraction
             "log_beta_ext_inf_func" : lambda x : self.log_beta_wit_inf, # perfect extraction
+            "log_slack_2_func": lambda x: 0,
+            "log_slack_inf_func": lambda x: 0,
         }
         return replace(self, **rel_param)
       
@@ -460,6 +463,8 @@ Parameters:
             "acc_snd_err": self.acc_snd_err + snd_err,
             "log_beta_ext_2_func" : lambda x : x + log(sqrt(d),2), 
             "log_beta_ext_inf_func" : lambda x : x, 
+            "log_slack_2_func": lambda x : d * x, 
+            "log_slack_inf_func": lambda x : d * x,
         }        
         return replace(self, **rel_params)
     
@@ -490,8 +495,10 @@ Parameters:
             "log_beta_wit_inf": log(repin * self.ring.C.gamma_inf,2) + self.log_beta_wit_inf, 
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
-            "log_beta_ext_2_func" : lambda x : x + log(2 * self.ring.C.theta_2,2),
-            "log_beta_ext_inf_func" : lambda x : x + log(2 * self.ring.C.theta_inf,2),
+            "log_beta_ext_2_func" : lambda x : x + 1, 
+            "log_beta_ext_inf_func" : lambda x : x + 1,
+            "log_slack_2_func": lambda x : log(2 * self.ring.C.theta_2,2),# assume no slack on input
+            "log_slack_inf_func": lambda x : log(2 * self.ring.C.theta_2,2),
         }
         return replace(self, **rel_params)
     
@@ -619,6 +626,8 @@ class Simulation:
     def extract(self):
         # Backward direction, a.k.a. "extraction direction"        
         if self.trace[-1].op_name == "finish":
+            self.trace[-1].log_slack_2 = 0
+            self.trace[-1].log_slack_inf = 0
             for i in range(len(self.trace)-1):
                 # The RoK is from `rel_src` to `rel_tgt`. The extracted norm function is stored in `rel_tgt`.
                 rel_tgt = self.trace[-i-1]
@@ -626,6 +635,9 @@ class Simulation:
             
                 rel_src.log_beta_ext_2 = rel_tgt.log_beta_ext_2_func(rel_tgt.log_beta_ext_2)   
                 rel_src.log_beta_ext_inf = rel_tgt.log_beta_ext_inf_func(rel_tgt.log_beta_ext_inf) 
+                
+                rel_src.log_slack_2 = rel_tgt.log_slack_2_func(rel_tgt.log_slack_2)   
+                rel_src.log_slack_inf = rel_tgt.log_slack_inf_func(rel_tgt.log_slack_inf) 
                     
                 # Check if any norm is overestimated. 
                 rel_src.norm_correction_ext()
@@ -635,10 +647,11 @@ class Simulation:
                         self.error_log += [f"Extraction failure for pi_norm: The norm of the square of the extracted witness is 2^{ceil(rel_src.log_beta_ext_inf * 2 + log(rel_src.ring.ring_exp_inf,2) + log(rel_src.wdim,2))} overflowing modulo q."]
                     
                 # Record maximum log_beta_ext_2 and log_beta_ext_inf
-                if rel_src.log_beta_ext_2 > self.max_log_beta_ext_2:
-                    self.max_log_beta_ext_2 = rel_src.log_beta_ext_2
-                if rel_src.log_beta_ext_inf > self.max_log_beta_ext_inf:
-                    self.max_log_beta_ext_inf = rel_src.log_beta_ext_inf
+                if rel_src.log_beta_ext_2 + rel_src.log_slack_2 > self.max_log_beta_ext_2:
+                    self.max_log_beta_ext_2 = rel_src.log_beta_ext_2 + rel_src.log_slack_2
+
+                if rel_src.log_beta_ext_inf + rel_src.log_slack_inf + log(rel_src.ring.ring_exp_inf, 2) > self.max_log_beta_ext_inf:
+                    self.max_log_beta_ext_inf = rel_src.log_beta_ext_inf + rel_src.log_slack_inf + log(rel_src.ring.ring_exp_inf, 2)
     
     def show_trace(self):
         print(f'Execution Trace:')
