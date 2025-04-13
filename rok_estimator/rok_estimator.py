@@ -483,6 +483,7 @@ Parameters:
             # Ensure that repin / (self.ring.C.cardinality**repout) <= 2^-kappa_target  
             repout = ceil((self.ring.kappa_target + log(repin,2) + self.ring.kappa_hedge) / log(self.ring.C.cardinality,2)) # +kappa_hedge hedges against running the RoK 2**kappa_hedge times
         snd_err = repin / (self.ring.C.cardinality**repout)
+        comm = 0
         rel_params = {
             # "ring": self.ring,
             # "trivial": self.trivial,
@@ -495,6 +496,8 @@ Parameters:
             # "log_beta_wit_2": log(sqrt(repout) * repin * self.ring.C.gamma_2,2) + self.log_beta_wit_2, # Measured in Frobenius norm
             "log_beta_wit_2": log(repin * self.ring.C.gamma_2,2) + self.log_beta_wit_2, # Measured in max ell_2-norm over all columns
             "log_beta_wit_inf": log(repin * self.ring.C.gamma_inf,2) + self.log_beta_wit_inf, 
+            "comm" : comm,
+            "acc_comm" : self.acc_comm + comm,
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
             "log_beta_ext_2_func" : lambda x : x + 1, 
@@ -517,6 +520,7 @@ Parameters:
             # Ensure that repin / (self.ring.C.cardinality**repout) <= 2^-kappa_target  
             repout = ceil((self.ring.kappa_target + log(repin,2) + self.ring.kappa_hedge) / log(self.ring.C.cardinality,2)) # +kappa_hedge hedges against running the RoK 2**kappa_hedge times
         snd_err = repin / (self.ring.C.cardinality**repout)
+        comm = 0
         rel_params = {
             # "ring": self.ring,
             # "trivial": self.trivial,
@@ -529,6 +533,8 @@ Parameters:
             # "log_beta_wit_2": log(sqrt(repout) * repin * self.ring.C.gamma_2,2) + self.log_beta_wit_2, # Measured in Frobenius norm
             "log_beta_wit_2": log(repin * self.ring.C.gamma_2,2) + self.log_beta_wit_2, # Measured in max ell_2-norm over all columns
             "log_beta_wit_inf": log(repin * self.ring.C.gamma_inf,2) + self.log_beta_wit_inf, 
+            "comm" : comm,
+            "acc_comm" : self.acc_comm + comm,
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
             "log_beta_ext_2_func" : lambda x : x + log(2 * self.ring.C.theta_2,2),
@@ -544,6 +550,7 @@ Parameters:
         # Otherwise, there is an unintuitive indirect cost for pi_batch: It increases n_compress by 1 even if n_compress = n_commit (i.e. n_rel = 0), and in the the communication cost of pi_split n_compress is multiplied by d**2 instead of d.
         if self.n_compress > self.n_commit: 
             snd_err = self.rep * self.n_rel / (2**(self.ring.log_q * self.ring.residue_deg))
+            comm = 0
             rel_params = {
                 # "ring": self.ring,
                 # "trivial": self.trivial,
@@ -555,6 +562,8 @@ Parameters:
                 # "rep": self.rep,
                 # "log_beta_wit_2": self.log_beta_wit_2,
                 # "log_beta_wit_inf": self.log_beta_wit_inf
+                "comm" : comm,
+                "acc_comm" : self.acc_comm + comm,
                 "snd_err": snd_err,
                 "acc_snd_err": self.acc_snd_err + snd_err,
                 "log_beta_ext_2_func" : lambda x : x, 
@@ -562,6 +571,8 @@ Parameters:
             }
             return replace(self, **rel_params)
         else:
+            snd_err = 0
+            comm = 0
             rel_params = {
                 # "ring": self.ring,
                 # "trivial": self.trivial,
@@ -573,8 +584,10 @@ Parameters:
                 # "rep": self.rep,
                 # "log_beta_wit_2": self.log_beta_wit_2,
                 # "log_beta_wit_inf": self.log_beta_wit_inf
-                # "snd_err": snd_err,
-                # "acc_snd_err": self.acc_snd_err + snd_err,
+                "comm" : comm,
+                "acc_comm" : self.acc_comm + comm,
+                "snd_err": snd_err,
+                "acc_snd_err": self.acc_snd_err + snd_err,
             }
             return replace(self, **rel_params)
     
