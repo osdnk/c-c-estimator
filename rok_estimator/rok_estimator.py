@@ -353,6 +353,8 @@ Parameters:
                 return self.pi_split(**kwargs)
             case "fold":
                 return self.pi_fold(**kwargs)
+            case "fold_old":
+                return self.pi_fold_old(**kwargs)
             case "batch":
                 return self.pi_batch()
             case "norm":
@@ -499,6 +501,38 @@ Parameters:
             "log_beta_ext_inf_func" : lambda x : x + 1,
             "log_slack_2_func": lambda x : log(2 * self.ring.C.theta_2,2),# assume no slack on input
             "log_slack_inf_func": lambda x : log(2 * self.ring.C.theta_2,2),
+        }
+        return replace(self, **rel_params)
+
+    def pi_fold_old(self, repout: int | None = None):
+        """
+        Returns the relation resulting from the pi_fold RoK. 
+        
+        Fold witness matrix W and challenge matrix C into W' = W * C. 
+        
+        Parameters: Output bundle size 'repout'.
+        """
+        repin = self.rep
+        if repout == None:
+            # Ensure that repin / (self.ring.C.cardinality**repout) <= 2^-kappa_target  
+            repout = ceil((self.ring.kappa_target + log(repin,2) + self.ring.kappa_hedge) / log(self.ring.C.cardinality,2)) # +kappa_hedge hedges against running the RoK 2**kappa_hedge times
+        snd_err = repin / (self.ring.C.cardinality**repout)
+        rel_params = {
+            # "ring": self.ring,
+            # "trivial": self.trivial,
+            "op_name": "fold_old",
+            # "n_compress": self.n_compress,
+            # "n_commit": self.n_commit,
+            # "n_rel": self.n_rel,
+            # "wdim": self.wdim,
+            "rep": repout,
+            # "log_beta_wit_2": log(sqrt(repout) * repin * self.ring.C.gamma_2,2) + self.log_beta_wit_2, # Measured in Frobenius norm
+            "log_beta_wit_2": log(repin * self.ring.C.gamma_2,2) + self.log_beta_wit_2, # Measured in max ell_2-norm over all columns
+            "log_beta_wit_inf": log(repin * self.ring.C.gamma_inf,2) + self.log_beta_wit_inf, 
+            "snd_err": snd_err,
+            "acc_snd_err": self.acc_snd_err + snd_err,
+            "log_beta_ext_2_func" : lambda x : x + log(2 * self.ring.C.theta_2,2),
+            "log_beta_ext_inf_func" : lambda x : x + log(2 * self.ring.C.theta_inf,2),
         }
         return replace(self, **rel_params)
     
