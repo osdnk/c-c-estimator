@@ -236,8 +236,8 @@ class Relation:
     acc_comm: int = 0                               # accumulated communication cost
     snd_err : int = 0                               # soundness error spent to arrive at this relation
     acc_snd_err: int = 0                            # accumulated soundness error
-    log_beta_ext_2_func     : function = lambda x : x   # function mapping old canonical ell_2-norm of extracted witness to new one 
-    log_beta_ext_inf_func   : function = lambda x : x   # function mapping old coefficient ell_inf-norm of extracted witness to new one
+    log_beta_ext_2_func     : function = lambda x, _ : x   # function mapping old canonical ell_2-norm of extracted witness to new one 
+    log_beta_ext_inf_func   : function = lambda x, _ : x   # function mapping old coefficient ell_inf-norm of extracted witness to new one
     log_slack_2_func : function = lambda x : x 
     log_slack_inf_func : function = lambda x : x 
     log_slack_2: float | None = None
@@ -393,8 +393,8 @@ Parameters:
             "comm": comm,
             "snd_err": 0,
             "acc_comm" : self.acc_comm + comm,
-            "log_beta_ext_2_func" : lambda x : self.log_beta_wit_2, # perfect extraction
-            "log_beta_ext_inf_func" : lambda x : self.log_beta_wit_inf, # perfect extraction
+            "log_beta_ext_2_func" : lambda x, _ : self.log_beta_wit_2, # perfect extraction
+            "log_beta_ext_inf_func" : lambda x, _ : self.log_beta_wit_inf, # perfect extraction
             "log_slack_2_func": lambda x: 0,
             "log_slack_inf_func": lambda x: 0,
         }
@@ -433,8 +433,8 @@ Parameters:
             "comm": comm,
             "snd_err": 0,
             "acc_comm": self.acc_comm + comm,
-            "log_beta_ext_2_func" : lambda x : x + log((base**ell-1)/(base-1),2),
-            "log_beta_ext_inf_func" : lambda x : x + log((base**ell-1)/(base-1),2),
+            "log_beta_ext_2_func" : lambda x, _ : x + log((base**ell-1)/(base-1),2),
+            "log_beta_ext_inf_func" : lambda x, _ : x + log((base**ell-1)/(base-1),2),
         }        
         return replace(self, **rel_param)
     
@@ -463,8 +463,8 @@ Parameters:
             "acc_comm": self.acc_comm + comm,
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
-            "log_beta_ext_2_func" : lambda x : x + log(sqrt(d),2), 
-            "log_beta_ext_inf_func" : lambda x : x, 
+            "log_beta_ext_2_func" : lambda x, s : x + log(sqrt(d),2) + (d-1) * s, 
+            "log_beta_ext_inf_func" : lambda x, s : x + (d-1) * s, 
             "log_slack_2_func": lambda x : d * x, 
             "log_slack_inf_func": lambda x : d * x,
         }        
@@ -500,8 +500,8 @@ Parameters:
             "acc_comm" : self.acc_comm + comm,
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
-            "log_beta_ext_2_func" : lambda x : x + 1, 
-            "log_beta_ext_inf_func" : lambda x : x + 1,
+            "log_beta_ext_2_func" : lambda x, _ : x + 1, 
+            "log_beta_ext_inf_func" : lambda x, _ : x + 1,
             "log_slack_2_func": lambda x : log(2 * self.ring.C.theta_2,2),# assume no slack on input
             "log_slack_inf_func": lambda x : log(2 * self.ring.C.theta_2,2),
         }
@@ -537,8 +537,8 @@ Parameters:
             "acc_comm" : self.acc_comm + comm,
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
-            "log_beta_ext_2_func" : lambda x : x + log(2 * self.ring.C.theta_2,2),
-            "log_beta_ext_inf_func" : lambda x : x + log(2 * self.ring.C.theta_inf,2),
+            "log_beta_ext_2_func" : lambda x, _ : x + log(2 * self.ring.C.theta_2,2),
+            "log_beta_ext_inf_func" : lambda x, _ : x + log(2 * self.ring.C.theta_inf,2),
         }
         return replace(self, **rel_params)
     
@@ -566,8 +566,8 @@ Parameters:
                 "acc_comm" : self.acc_comm + comm,
                 "snd_err": snd_err,
                 "acc_snd_err": self.acc_snd_err + snd_err,
-                "log_beta_ext_2_func" : lambda x : x, 
-                "log_beta_ext_inf_func" : lambda x : x, 
+                "log_beta_ext_2_func" : lambda x, _ : x, 
+                "log_beta_ext_inf_func" : lambda x, _ : x, 
             }
             return replace(self, **rel_params)
         else:
@@ -617,8 +617,8 @@ Parameters:
             "acc_comm" : self.acc_comm + comm,
             "snd_err": snd_err,
             "acc_snd_err": self.acc_snd_err + snd_err,
-            "log_beta_ext_2_func" : lambda x : self.log_beta_wit_2 + log(sqrt(self.rep),2), # pi_norm only proves Frobenius norm but not max column ell_2-norm
-            "log_beta_ext_inf_func" : lambda x : oo, # Simulation.extract will bound coefficient ell-inf norm by canonical ell-2 norm
+            "log_beta_ext_2_func" : lambda x, _ : self.log_beta_wit_2 + log(sqrt(self.rep),2), # pi_norm only proves Frobenius norm but not max column ell_2-norm
+            "log_beta_ext_inf_func" : lambda x, _ : oo, # Simulation.extract will bound coefficient ell-inf norm by canonical ell-2 norm
         }
         return replace(self, **rel_params)
     
@@ -680,8 +680,8 @@ class Simulation:
                 rel_tgt = self.trace[-i-1]
                 rel_src = self.trace[-i-2]
             
-                rel_src.log_beta_ext_2 = rel_tgt.log_beta_ext_2_func(rel_tgt.log_beta_ext_2)   
-                rel_src.log_beta_ext_inf = rel_tgt.log_beta_ext_inf_func(rel_tgt.log_beta_ext_inf) 
+                rel_src.log_beta_ext_2 = rel_tgt.log_beta_ext_2_func(rel_tgt.log_beta_ext_2,rel_tgt.log_slack_2)   
+                rel_src.log_beta_ext_inf = rel_tgt.log_beta_ext_inf_func(rel_tgt.log_beta_ext_inf,rel_tgt.log_slack_inf) 
                 
                 rel_src.log_slack_2 = rel_tgt.log_slack_2_func(rel_tgt.log_slack_2)   
                 rel_src.log_slack_inf = rel_tgt.log_slack_inf_func(rel_tgt.log_slack_inf) 
