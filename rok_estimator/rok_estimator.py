@@ -691,7 +691,7 @@ class Simulation:
                 
                 if self.trace[-i-1].op_name == "norm":
                     if rel_src.ring.log_q < rel_src.log_beta_ext_2 * 2:
-                        self.error_log += [f"Extraction failure for pi_norm: The norm of the square of the extracted witness is 2^{ceil(rel_src.log_beta_ext_inf * 2 + log(rel_src.ring.ring_exp_inf,2) + log(rel_src.wdim,2))} overflowing modulo q."]
+                        self.error_log += [f"Extraction failure for pi_norm: The norm of the square of the extracted witness is 2^{ceil(rel_src.log_beta_ext_2 * 2)} overflowing modulo q."]
                     
                 # Record maximum log_beta_ext_2 and log_beta_ext_inf
                 if rel_src.log_beta_ext_2 + rel_src.log_slack_2 > self.max_log_beta_ext_2:
