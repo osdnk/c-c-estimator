@@ -43,7 +43,7 @@ def pretty_size(bits, units=UNITS_MAPPING):
         if bits >= factor:
             break
     # amount = int(bits / factor)
-    amount = n(bits/factor, digits=4)
+    amount = n(bits/factor, digits=6)
 
     if isinstance(suffix, tuple):
         singular, multiple = suffix
@@ -713,7 +713,7 @@ class Simulation:
         total_comm = self.trace[-1].acc_comm
         total_snd_err = self.trace[-1].acc_snd_err
         log_total_snd_err_str = get_log_snd_err_str(total_snd_err)
-        print(f'Total Cost: communication = {pretty_size(total_comm):8s}, soundness error = 2^{log_total_snd_err_str}')
+        print(f'Total Cost: communication = {pretty_size(total_comm):12s}, soundness error = 2^{log_total_snd_err_str}')
         flag_log_beta_wit_2 = f'*' if self.max_log_beta_wit_2 + 1 > self.ring.log_beta_sis_2 else ' '                                   # NOTE: Underestimating security when log_beta_wit_2 is measured in Frobenius norm 
         flag_log_beta_ext_2 = f'*' if self.max_log_beta_ext_2 != None and self.max_log_beta_ext_2 + 1> self.ring.log_beta_sis_2 else ' '    # NOTE: Underestimating security when log_beta_ext_2 is measured in Frobenius norm 
         print(f'Maximum log ell_2-norm (real | extr) = ({ceil(self.max_log_beta_wit_2):3d}{flag_log_beta_wit_2}|{ceil(self.max_log_beta_ext_2):3d}{flag_log_beta_ext_2}), log SIS norm bound = {self.ring.log_beta_sis_2}')
