@@ -155,10 +155,14 @@ class RingParam:
         if self.residue_deg == None:
             self.residue_deg = ceil((self.kappa_target + self.kappa_hedge)/self.log_q)       # Aim for kappa_target bits of soundness for Schwartz-Zippel. Adding kappa_hedge bits to hedge against running the RoKs 2**kappa_hedge times
             self.kappa_result = self.log_q * self.residue_deg
-        if is_even(self.f):
-            self.fhat = self.f/2
+        if radical(self.f) == 2:
+            self.flat = 1 # assume coeff 2-norm :3
+            print("coeff 2-norm")
         else:
-            self.fhat = self.f
+            if is_even(self.f):
+                self.fhat = self.f/2
+            else:
+                self.fhat = self.f
         # Estimate vSIS security
         # Heuristics 1: vSIS is as hard as SIS
         # Heuristics 2: SIS over modules in canonical ell_2-norm is as hard as SIS over ZZ in ell_2-norm
